@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Minecraft Player HTML Widget</title>
+    
+    <style id="style" type="text/css">
+      * {
+        margin: 0;
+        padding: 0;
+        
+        font-size: 1px;
+      }
+      
+      .player {
+        position: relative;
+        left: 8em;
+        top: 4em;
+      }
+      
+      .part {
+        display: block;
+        width: 1em;
+        height: 1em;
+        overflow: hidden;
+        position: absolute;
+        
+        top: 0;
+        left: 0;
+      }
+      
+      .part.head {
+        width: 8em;
+        height: 8em;
+        background-position: -8em -8em;
+        
+        top: -4em;
+        left: -4em;
+      }
+      
+      .part.body {
+        width: 8em;
+        height: 12em;
+        background-position: -20em -20em;
+        
+        top: 4em;
+        left: -4em;
+      }
+      
+      .part.arm {
+        width: 4em;
+        height: 12em;
+        background-position: -44em -20em;
+      }
+      
+      .part.arm.left {
+        top: 4em;
+        left: -8em;
+      }
+      
+      .part.arm.right {
+        top: 4em;
+        left: 4em;
+      }
+      
+      .part.right {
+        -webkit-transform: scaleX(-1);
+           -moz-transform: scaleX(-1);
+             -o-transform: scaleX(-1);
+                transform: scaleX(-1);
+               -ms-filter: "FlipH";
+                   filter: FlipH;
+      }
+      
+      .part.leg {
+        width: 4em;
+        height: 12em;
+        background-position: -4em -20em;
+      }
+      
+      .part.leg.left {
+        top: 20em;
+        left: -4em;
+      }
+      
+      .part.leg.right {
+        top: 20em;
+        left: 0em;
+      }
+    </style>
+    
+    <script type="text/javascript">
+      var params = function () {
+        var vars = [], hash;
+        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        for(var i = 0; i < hashes.length; i++) {
+          hash = hashes[i].split('=');
+          vars.push(hash[0]);
+          vars[hash[0]] = hash[1];
+        }
+        return vars;
+      }()
+      
+      var playerName = params.playername || "Notch",
+          scale = params.scale || 1;
+      
+      var playerImage = "http://s3.amazonaws.com/MinecraftSkins/" + playerName + ".png",
+          height = 32 * scale,
+          width = 64 * scale,
+          variableStyles = ".part { background: #fff url(\"" + playerImage + "\") top left no-repeat; background-size: " + width + "px " + height + "px; }";
+      
+      variableStyles += "\n* { font-size: " + scale + "px; }"
+      
+      var style = document.getElementById('style');
+      style.innerHTML += variableStyles;
+    </script>
+  </head>
+  <body>
+    <div class="player">
+      <span class="part head"></span>
+      <span class="part body"></span>
+      <span class="part arm left"></span>
+      <span class="part arm right"></span>
+      <span class="part leg left"></span>
+      <span class="part leg right"></span>
+    </div>
+  </body>
+</html>
