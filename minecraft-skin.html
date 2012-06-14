@@ -47,6 +47,7 @@
     
     var img = document.createElement('img');
     img.src=playerImage;
+    img.crossOrigin="anonymous";
     img.onload = function() {
       ctx.drawImage(img, 0, 0, 64, 32);
       
