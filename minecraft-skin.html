@@ -12,87 +12,120 @@
       canvas {
         display: block;
       }
+      
+      #img {
+        display: none;
+      }
     </style>
+    
+    <script type="text/javascript" src="assets/js/jquery-1.7.2.min.js"></script>
+    <!-- <script type="text/javascript" src="assets/js/jquery.base64.min.js"></script> -->
   </head>
   <body>
     <canvas id="canvas"></canvas>
+    <img id="img" src="" />
   </body>
   
   <script type="text/javascript">
-    var params = function () {
-      var vars = [], hash;
-      var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-      for(var i = 0; i < hashes.length; i++) {
-        hash = hashes[i].split('=');
-        vars.push(hash[0]);
-        vars[hash[0]] = hash[1];
-      }
-      return vars;
-    }()
-    
-    var playerName = params.playername || "Notch",
-        scale = Math.floor(params.scale) || 1;
-      
-    // Converts a co-ordinate to scale
-    function sc(coord) {
-      return coord * scale;
-    }
-    
-    var playerImage = "http://s3.amazonaws.com/MinecraftSkins/" + playerName + ".png";
-    
-    var canvas = document.getElementById('canvas');
-    canvas.width = sc(64);
-    canvas.height = sc(32);
-    var ctx = canvas.getContext("2d");
-    
-    var img = document.createElement('img');
-    img.src=playerImage;
-    img.crossOrigin="anonymous";
-    img.onload = function() {
-      ctx.drawImage(img, 0, 0, 64, 32);
-      
-      try {
-        try {
-          var origImage = ctx.getImageData(0, 0, 64, 32);
-        } catch (e) {
-          netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
-          var origImage = ctx.getImageData(0, 0, 64, 32);
+    $(function() {
+      var params = function () {
+        var vars = [], hash;
+        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        for(var i = 0; i < hashes.length; i++) {
+          hash = hashes[i].split('=');
+          vars.push(hash[0]);
+          vars[hash[0]] = hash[1];
         }
-      } catch (e) {
-        throw new Error("unable to access image data: " + e);
+        return vars;
+      }()
+      
+      function base64Encode(str) {
+        var CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        var out = "", i = 0, len = str.length, c1, c2, c3;
+        while (i < len) {
+          c1 = str.charCodeAt(i++) & 0xff;
+          if (i == len) {
+            out += CHARS.charAt(c1 >> 2);
+            out += CHARS.charAt((c1 & 0x3) << 4);
+            out += "==";
+            break;
+          }
+          c2 = str.charCodeAt(i++);
+          if (i == len) {
+            out += CHARS.charAt(c1 >> 2);
+            out += CHARS.charAt(((c1 & 0x3)<< 4) | ((c2 & 0xF0) >> 4));
+            out += CHARS.charAt((c2 & 0xF) << 2);
+            out += "=";
+            break;
+          }
+          c3 = str.charCodeAt(i++);
+          out += CHARS.charAt(c1 >> 2);
+          out += CHARS.charAt(((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4));
+          out += CHARS.charAt(((c2 & 0xF) << 2) | ((c3 & 0xC0) >> 6));
+          out += CHARS.charAt(c3 & 0x3F);
+        }
+        return out;
+      }
+
+      var playerName = params.playername || "Notch",
+          scale = Math.floor(params.scale) || 1;
+      
+      // Converts a co-ordinate to scale
+      function sc(coord) {
+        return coord * scale;
       }
       
-      var newImage = ctx.createImageData(64 * scale, 32 * scale);
+      var playerImage = "http://s3.amazonaws.com/MinecraftSkins/" + playerName + ".png";
       
-      for (var h = 0; h < origImage.data.length; h += 4) {
-        
-        var x = (h / 4) % origImage.width;
-        var y = Math.floor(h / 4 / origImage.width);
-        
-        // console.log(x + "," + y);
-        
-        var channels = [origImage.data[h], origImage.data[h+1], origImage.data[h+2], origImage.data[h+3]];
-        var rgbaCode = ["rgba(", channels.join(","), ")"].join("")
-        
-        ctx.fillStyle = rgbaCode;
-        ctx.fillRect(x * scale, y * scale, scale, scale);
-      }
-      
-      // Cut out body parts
-      var head = ctx.getImageData(sc(8), sc(8), sc(8), sc(8)),
-          body = ctx.getImageData(sc(20), sc(20), sc(8), sc(12)),
-          legRight = ctx.getImageData(sc(4), sc(20), sc(4), sc(12)),
-          armRight = ctx.getImageData(sc(44), sc(20), sc(4), sc(12));
-      
-      ctx.clearRect(sc(0), sc(0), sc(64), sc(32));
-      canvas.width = sc(16);
+      var canvas = document.getElementById('canvas');
+      canvas.width = sc(64);
       canvas.height = sc(32);
-      ctx.putImageData(head, sc(4), sc(0));
-      ctx.putImageData(body, sc(4), sc(8));
-      ctx.putImageData(armRight, sc(0), sc(8));
-      ctx.putImageData(armRight, sc(12), sc(8));
-      ctx.putImageData(legRight, sc(4), sc(20));
-      ctx.putImageData(legRight, sc(8), sc(20));
-    }
+      var ctx = canvas.getContext("2d");
+      
+      
+      $.ajax({
+        type: "GET",
+        url: playerImage,
+        mimeType: "text/plain; charset=x-user-defined",
+        success: function(data) {
+          $("#img").attr("src", "data:image/png;base64," + base64Encode(data));
+          
+          var img = document.getElementById('img');
+          
+          img.onload = function() {
+            ctx.drawImage(img, 0, 0, 64, 32);
+            
+            var origImage = ctx.getImageData(0, 0, 64, 32);
+                      
+            for (var h = 0; h < origImage.data.length; h += 4) {
+              var x = (h / 4) % origImage.width;
+              var y = Math.floor(h / 4 / origImage.width);
+                      
+              var channels = [origImage.data[h], origImage.data[h+1], origImage.data[h+2], origImage.data[h+3]];
+              var rgbaCode = ["rgba(", channels.join(","), ")"].join("");
+                      
+              ctx.fillStyle = rgbaCode;
+              ctx.fillRect(x * scale, y * scale, scale, scale);
+            }
+            
+            // Cut out body parts
+             var head = ctx.getImageData(sc(8), sc(8), sc(8), sc(8)),
+                 body = ctx.getImageData(sc(20), sc(20), sc(8), sc(12)),
+                 legRight = ctx.getImageData(sc(4), sc(20), sc(4), sc(12)),
+                 armRight = ctx.getImageData(sc(44), sc(20), sc(4), sc(12));
+
+             ctx.clearRect(sc(0), sc(0), sc(64), sc(32));
+             canvas.width = sc(16);
+             canvas.height = sc(32);
+             ctx.putImageData(head, sc(4), sc(0));
+             ctx.putImageData(body, sc(4), sc(8));
+             ctx.putImageData(armRight, sc(0), sc(8));
+             ctx.putImageData(armRight, sc(12), sc(8));
+             ctx.putImageData(legRight, sc(4), sc(20));
+             ctx.putImageData(legRight, sc(8), sc(20));
+          }
+        }
+      });
+    });
   </script>
 </html>
