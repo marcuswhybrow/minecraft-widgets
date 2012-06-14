@@ -15,18 +15,7 @@
     </style>
   </head>
   <body>
-    <!-- <div class="player">
-      <div class="wrapper">
-        <span class="part head"></span>
-        <span class="part body"></span>
-        <span class="part arm left"></span>
-        <span class="part arm right"></span>
-        <span class="part leg left"></span>
-        <span class="part leg right"></span>
-      </div>
-    </div> -->
-    
-    <canvas id="canvas" width="1000px" height="1000px"></canvas>
+    <canvas id="canvas"></canvas>
   </body>
   
   <script type="text/javascript">
@@ -55,10 +44,11 @@
     canvas.width = sc(64);
     canvas.height = sc(32);
     var ctx = canvas.getContext("2d");
-    var image = new Image();
-    image.src=playerImage;
-    image.onload = function() {
-      ctx.drawImage(image, 0, 0, 64, 32);
+    
+    var img = document.createElement('img');
+    img.src=playerImage;
+    img.onload = function() {
+      ctx.drawImage(img, 0, 0, 64, 32);
       
       try {
         try {
