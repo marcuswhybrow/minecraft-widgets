@@ -7,120 +7,101 @@
       * {
         margin: 0;
         padding: 0;
-        
-        font-size: 1px;
       }
       
-      .player {
-        position: relative;
-        left: 8em;
-        top: 4em;
-      }
-      
-      .part {
+      canvas {
         display: block;
-        width: 1em;
-        height: 1em;
-        overflow: hidden;
-        position: absolute;
-        
-        top: 0;
-        left: 0;
-      }
-      
-      .part.head {
-        width: 8em;
-        height: 8em;
-        background-position: -8em -8em;
-        
-        top: -4em;
-        left: -4em;
-      }
-      
-      .part.body {
-        width: 8em;
-        height: 12em;
-        background-position: -20em -20em;
-        
-        top: 4em;
-        left: -4em;
-      }
-      
-      .part.arm {
-        width: 4em;
-        height: 12em;
-        background-position: -44em -20em;
-      }
-      
-      .part.arm.left {
-        top: 4em;
-        left: -8em;
-      }
-      
-      .part.arm.right {
-        top: 4em;
-        left: 4em;
-      }
-      
-      .part.right {
-        -webkit-transform: scaleX(-1);
-           -moz-transform: scaleX(-1);
-             -o-transform: scaleX(-1);
-                transform: scaleX(-1);
-               -ms-filter: "FlipH";
-                   filter: FlipH;
-      }
-      
-      .part.leg {
-        width: 4em;
-        height: 12em;
-        background-position: -4em -20em;
-        top: 16em;
-      }
-      
-      .part.leg.left {
-        left: -4em;
-      }
-      
-      .part.leg.right {
-        left: 0em;
       }
     </style>
-    
-    <script type="text/javascript">
-      var params = function () {
-        var vars = [], hash;
-        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-        for(var i = 0; i < hashes.length; i++) {
-          hash = hashes[i].split('=');
-          vars.push(hash[0]);
-          vars[hash[0]] = hash[1];
-        }
-        return vars;
-      }()
-      
-      var playerName = params.playername || "Notch",
-          scale = params.scale || 1;
-      
-      var playerImage = "http://s3.amazonaws.com/MinecraftSkins/" + playerName + ".png",
-          height = 32 * scale,
-          width = 64 * scale,
-          variableStyles = ".part { background: #fff url(\"" + playerImage + "\") top left no-repeat; background-size: " + width + "px " + height + "px; }";
-      
-      variableStyles += "\n* { font-size: " + scale + "px; }"
-      
-      var style = document.getElementById('style');
-      style.innerHTML += variableStyles;
-    </script>
   </head>
   <body>
-    <div class="player">
-      <span class="part head"></span>
-      <span class="part body"></span>
-      <span class="part arm left"></span>
-      <span class="part arm right"></span>
-      <span class="part leg left"></span>
-      <span class="part leg right"></span>
-    </div>
+    <!-- <div class="player">
+      <div class="wrapper">
+        <span class="part head"></span>
+        <span class="part body"></span>
+        <span class="part arm left"></span>
+        <span class="part arm right"></span>
+        <span class="part leg left"></span>
+        <span class="part leg right"></span>
+      </div>
+    </div> -->
+    
+    <canvas id="canvas" width="1000px" height="1000px"></canvas>
   </body>
+  
+  <script type="text/javascript">
+    var params = function () {
+      var vars = [], hash;
+      var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+      for(var i = 0; i < hashes.length; i++) {
+        hash = hashes[i].split('=');
+        vars.push(hash[0]);
+        vars[hash[0]] = hash[1];
+      }
+      return vars;
+    }()
+    
+    var playerName = params.playername || "Notch",
+        scale = Math.floor(params.scale) || 1;
+      
+    // Converts a co-ordinate to scale
+    function sc(coord) {
+      return coord * scale;
+    }
+    
+    var playerImage = "http://s3.amazonaws.com/MinecraftSkins/" + playerName + ".png";
+    
+    var canvas = document.getElementById('canvas');
+    canvas.width = sc(64);
+    canvas.height = sc(32);
+    var ctx = canvas.getContext("2d");
+    var image = new Image();
+    image.src=playerImage;
+    image.onload = function() {
+      ctx.drawImage(image, 0, 0, 64, 32);
+      
+      try {
+        try {
+          var origImage = ctx.getImageData(0, 0, 64, 32);
+        } catch (e) {
+          netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
+          var origImage = ctx.getImageData(0, 0, 64, 32);
+        }
+      } catch (e) {
+        throw new Error("unable to access image data: " + e);
+      }
+      
+      var newImage = ctx.createImageData(64 * scale, 32 * scale);
+      
+      for (var h = 0; h < origImage.data.length; h += 4) {
+        
+        var x = (h / 4) % origImage.width;
+        var y = Math.floor(h / 4 / origImage.width);
+        
+        // console.log(x + "," + y);
+        
+        var channels = [origImage.data[h], origImage.data[h+1], origImage.data[h+2], origImage.data[h+3]];
+        var rgbaCode = ["rgba(", channels.join(","), ")"].join("")
+        
+        ctx.fillStyle = rgbaCode;
+        ctx.fillRect(x * scale, y * scale, scale, scale);
+      }
+      
+      // Cut out body parts
+      var head = ctx.getImageData(sc(8), sc(8), sc(8), sc(8)),
+          body = ctx.getImageData(sc(20), sc(20), sc(8), sc(12)),
+          legRight = ctx.getImageData(sc(4), sc(20), sc(4), sc(12)),
+          armRight = ctx.getImageData(sc(44), sc(20), sc(4), sc(12));
+      
+      ctx.clearRect(sc(0), sc(0), sc(64), sc(32));
+      canvas.width = sc(16);
+      canvas.height = sc(32);
+      ctx.putImageData(head, sc(4), sc(0));
+      ctx.putImageData(body, sc(4), sc(8));
+      ctx.putImageData(armRight, sc(0), sc(8));
+      ctx.putImageData(armRight, sc(12), sc(8));
+      ctx.putImageData(legRight, sc(4), sc(20));
+      ctx.putImageData(legRight, sc(8), sc(20));
+    }
+  </script>
 </html>
