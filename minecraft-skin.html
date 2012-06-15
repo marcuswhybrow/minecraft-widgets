@@ -50,8 +50,8 @@
     var ctx = canvas.getContext("2d");
     
     var img = new Image();
+    img.crossOrigin = '';
     img.src = playerImage;
-    img.crossOrigin = "anonymous";
     img.onload = function() {
       ctx.drawImage(img, 0, 0, 64, 32);
       
