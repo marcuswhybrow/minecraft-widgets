@@ -51,6 +51,7 @@
     
     var img = new Image();
     img.src = playerImage;
+    img.crossOrigin = "Anonymous";
     img.onload = function() {
       ctx.drawImage(img, 0, 0, 64, 32);
       
