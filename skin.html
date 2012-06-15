@@ -96,8 +96,8 @@
       return out;
     }
     
-     
-    var xhr = new XMLHttpRequest();
+    var isIE = window.XDomainRequest,
+        xhr = isIE ? window.XDomainRequest() : new XMLHttpRequest();
     xhr.open('GET', playerImage, false);
     xhr.overrideMimeType('text/plain; charset=x-user-defined');
     xhr.onload = function() {
