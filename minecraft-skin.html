@@ -49,6 +49,26 @@
     canvas.height = sc(32);
     var ctx = canvas.getContext("2d");
     
+    function BodyPart(x, y, w, h) {
+      var data = ctx.getImageData(x, y, w, h),
+          tempCanvas = document.createElement('canvas'),
+          tempCanvasContext = tempCanvas.getContext('2d');
+      
+      this.image = new Image();
+      
+      this.width = data.width;
+      this.height = data.height;
+      tempCanvas.width = data.width;
+      tempCanvas.height = data.height;
+      
+      tempCanvasContext.putImageData(data, 0, 0);
+      this.image.src = tempCanvas.toDataURL();
+      
+      this.draw = function(x, y) {
+        ctx.drawImage(this.image, x, y, this.width, this.height);
+      }
+    }
+    
     var img = new Image();
     img.crossOrigin = '';
     img.src = playerImage;
@@ -69,20 +89,35 @@
       }
       
       // Cut out body parts
-       var head = ctx.getImageData(sc(8), sc(8), sc(8), sc(8)),
-           body = ctx.getImageData(sc(20), sc(20), sc(8), sc(12)),
-           legRight = ctx.getImageData(sc(4), sc(20), sc(4), sc(12)),
-           armRight = ctx.getImageData(sc(44), sc(20), sc(4), sc(12));
+      var head = new BodyPart(sc(8), sc(8), sc(8), sc(8)),
+          body = new BodyPart(sc(20), sc(20), sc(8), sc(12)),
+          legRight = new BodyPart(sc(4), sc(20), sc(4), sc(12)),
+          armRight = new BodyPart(sc(44), sc(20), sc(4), sc(12));
 
-       ctx.clearRect(sc(0), sc(0), sc(64), sc(32));
-       canvas.width = sc(16);
-       canvas.height = sc(32);
-       ctx.putImageData(head, sc(4), sc(0));
-       ctx.putImageData(body, sc(4), sc(8));
-       ctx.putImageData(armRight, sc(0), sc(8));
-       ctx.putImageData(armRight, sc(12), sc(8));
-       ctx.putImageData(legRight, sc(4), sc(20));
-       ctx.putImageData(legRight, sc(8), sc(20));
+      ctx.clearRect(sc(0), sc(0), sc(64), sc(32));
+      canvas.width = sc(16);
+      canvas.height = sc(32);
+      
+      head.draw(sc(4), sc(0));
+      body.draw(sc(4), sc(8));
+      
+      // Right limbs
+      armRight.draw(sc(0), sc(8));
+      legRight.draw(sc(4), sc(20));
+      
+      
+      // Left limbs
+      ctx.save();
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+      armRight.draw(sc(0), sc(8));
+      ctx.restore();
+      
+      ctx.save();
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+      legRight.draw(sc(4), sc(20));
+      ctx.restore();
     }
     
   </script>
