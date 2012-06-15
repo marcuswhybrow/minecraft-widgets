@@ -69,56 +69,91 @@
       }
     }
     
-    var img = new Image();
-    img.crossOrigin = '';
-    img.src = playerImage;
-    img.onload = function() {
-      ctx.drawImage(img, 0, 0, 64, 32);
-      
-      var origImage = ctx.getImageData(0, 0, 64, 32);
-                
-      for (var h = 0; h < origImage.data.length; h += 4) {
-        var x = (h / 4) % origImage.width;
-        var y = Math.floor(h / 4 / origImage.width);
-                
-        var channels = [origImage.data[h], origImage.data[h+1], origImage.data[h+2], origImage.data[h+3]];
-        var rgbaCode = ["rgba(", channels.join(","), ")"].join("");
-                
-        ctx.fillStyle = rgbaCode;
-        ctx.fillRect(x * scale, y * scale, scale, scale);
+    function base64Encode(str) {
+      var CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+      var out = "", i = 0, len = str.length, c1, c2, c3;
+      while (i < len) {
+        c1 = str.charCodeAt(i++) & 0xff;
+        if (i == len) {
+          out += CHARS.charAt(c1 >> 2);
+          out += CHARS.charAt((c1 & 0x3) << 4);
+          out += "==";
+          break;
+        }
+        c2 = str.charCodeAt(i++);
+        if (i == len) {
+          out += CHARS.charAt(c1 >> 2);
+          out += CHARS.charAt(((c1 & 0x3)<< 4) | ((c2 & 0xF0) >> 4));
+          out += CHARS.charAt((c2 & 0xF) << 2);
+          out += "=";
+          break;
+        }
+        c3 = str.charCodeAt(i++);
+        out += CHARS.charAt(c1 >> 2);
+        out += CHARS.charAt(((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4));
+        out += CHARS.charAt(((c2 & 0xF) << 2) | ((c3 & 0xC0) >> 6));
+        out += CHARS.charAt(c3 & 0x3F);
       }
-      
-      // Cut out body parts
-      var head = new BodyPart(sc(8), sc(8), sc(8), sc(8)),
-          body = new BodyPart(sc(20), sc(20), sc(8), sc(12)),
-          legRight = new BodyPart(sc(4), sc(20), sc(4), sc(12)),
-          armRight = new BodyPart(sc(44), sc(20), sc(4), sc(12));
-
-      ctx.clearRect(sc(0), sc(0), sc(64), sc(32));
-      canvas.width = sc(16);
-      canvas.height = sc(32);
-      
-      head.draw(sc(4), sc(0));
-      body.draw(sc(4), sc(8));
-      
-      // Right limbs
-      armRight.draw(sc(0), sc(8));
-      legRight.draw(sc(4), sc(20));
-      
-      
-      // Left limbs
-      ctx.save();
-      ctx.translate(canvas.width, 0);
-      ctx.scale(-1, 1);
-      armRight.draw(sc(0), sc(8));
-      ctx.restore();
-      
-      ctx.save();
-      ctx.translate(canvas.width, 0);
-      ctx.scale(-1, 1);
-      legRight.draw(sc(4), sc(20));
-      ctx.restore();
+      return out;
     }
+    
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', playerImage, false);
+    xhr.overrideMimeType('text/plain; charset=x-user-defined');
+    xhr.onload = function() {
+      var img = new Image();
+      img.src = 'data:image/png;base64,' + base64Encode(xhr.response);
+      // document.body.appendChild(img);
+      
+      img.onload = function() {
+        ctx.drawImage(img, 0, 0, 64, 32);
+
+        var origImage = ctx.getImageData(0, 0, 64, 32);
+                  
+        for (var h = 0; h < origImage.data.length; h += 4) {
+          var x = (h / 4) % origImage.width;
+          var y = Math.floor(h / 4 / origImage.width);
+                  
+          var channels = [origImage.data[h], origImage.data[h+1], origImage.data[h+2], origImage.data[h+3]];
+          var rgbaCode = ["rgba(", channels.join(","), ")"].join("");
+                  
+          ctx.fillStyle = rgbaCode;
+          ctx.fillRect(x * scale, y * scale, scale, scale);
+        }
+
+        // Cut out body parts
+        var head = new BodyPart(sc(8), sc(8), sc(8), sc(8)),
+            body = new BodyPart(sc(20), sc(20), sc(8), sc(12)),
+            legRight = new BodyPart(sc(4), sc(20), sc(4), sc(12)),
+            armRight = new BodyPart(sc(44), sc(20), sc(4), sc(12));
+        
+        ctx.clearRect(sc(0), sc(0), sc(64), sc(32));
+        canvas.width = sc(16);
+        canvas.height = sc(32);
+        
+        head.draw(sc(4), sc(0));
+        body.draw(sc(4), sc(8));
+        
+        // Right limbs
+        armRight.draw(sc(0), sc(8));
+        legRight.draw(sc(4), sc(20));
+        
+        
+        // Left limbs
+        ctx.save();
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        armRight.draw(sc(0), sc(8));
+        ctx.restore();
+        
+        ctx.save();
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        legRight.draw(sc(4), sc(20));
+        ctx.restore();
+      }
+    }
+    xhr.send(null);
     
   </script>
 </html>
