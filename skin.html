@@ -99,9 +99,9 @@
     var isIE = window.XDomainRequest;
     if (isIE) {
       xhr = window.XDomainRequest();
-      xhr.overrideMimeType('text/plain; charset=x-user-defined');
     } else {
       xhr = new XMLHttpRequest();
+      xhr.overrideMimeType('text/plain; charset=x-user-defined');
     }
     xhr.open('GET', playerImage, false);
     xhr.onload = function() {
