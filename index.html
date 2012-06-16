@@ -1,9 +1,212 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <meta charset="utf-8">
     <title>Minecraft Widgets</title>
+    <meta name="description" content="">
+    <meta name="author" content="Marcus Whybrow">
+    
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/bootstrap-responsive.min.css" rel="stylesheet">
+    <link href="assets/css/style.css" rel="stylesheet">
+    
+    <!--[if lt IE 9]>
+      <script type="text/javascript" src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <script type="text/javascript" src="assets/js/jquery-1.7.2.min.js"></script>
+    <script type="text/javascript" src="assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="assets/js/jquery.color.js"></script>
+    <script type="text/javascript">
+      $(function() {
+        
+        $.fn.animateHighlight = function(highlightColor, duration) {
+            var highlightBg = highlightColor || "#FFFF9C",
+                animateMs = duration || 1500,
+                originalBg = this.css("backgroundColor");
+            this.stop().css("background-color", highlightBg).animate({ 'background-color': '#fff' }, animateMs);
+        };
+        
+        
+        $('.widget-creator .target input').bind('mousedown mouseup', function() {
+          this.select();
+          return false;
+        }).bind('keydown', function(e) {
+          this.value=$(this).data('value');
+          this.select();
+          e.preventDefault();
+        });
+        
+        $('.widget-creator').submit(function() { return false; });
+        $('.widget-creator input').bind('keyup', function() {
+          var playername = $('.widget-creator input[name="playername"]').val(),
+              scaleText = $('.widget-creator input[name="scale"]').val(),
+              scale;
+          
+          if (scaleText && isNaN(scaleText)) {
+            $('.widget-creator input[name="scale"]').animateHighlight('#ff9c9c', 200);
+            $('.widget-creator .target input')
+              .attr('value', ' -- SCALE MUST BE AN INTEGER -- ')
+              .data('value', ' -- SCALE MUST BE AN INTEGER -- ');
+              return false;
+          } else if (scale == '') {
+            scale = 1;
+          } else {
+            scale = parseInt(scaleText, 10);
+          }
+          
+          var width = scale * 16,
+              height = scale * 32,
+              iframe = [
+                '<iframe ',
+                'src="http://marcuswhybrow.github.com/minecraft-widgets/skin.html?playername=', playername, '&amp;scale=', scale, '" ',
+                'width="', width, '" ',
+                'height="', height, '" ',
+                'frameborder="0" scrolling="0" allowtransparency="true"',
+                '></frame>'
+              ].join('');
+          $('.widget-creator .target input')
+            .attr('value', iframe)
+            .data('value', iframe)
+            .animateHighlight(null, 200);
+          return false;
+        });
+      });
+      
+      // Google Analytics
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-32675598-3']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
   </head>
   <body>
-    <h1>Minecraft Widgets</h1>
+    
+    <div class="container">
+      <div class="masthead">
+        <!-- <p class="introducing">Introducing...</p> -->
+        <h1>Minecraft Widgets</h1>
+        <p>Reusable Minecraft HTML widgets.</p>
+    
+        <div class="buttons">
+          <a id="view-button" href="https://github.com/marcuswhybrow/minecraft-widgets" class="btn btn-primary btn-large" onclick="_gaq.push(['_trackEvent', 'Masthead Actions', 'Github Project', 'View project on GitHub']);">View project on GitHub</a>
+        </div>
+      
+        <ul class="quick-links">
+          <li>
+            <iframe class="github-btn" src="http://markdotto.github.com/github-buttons/github-btn.html?user=marcuswhybrow&amp;repo=minecraft-widgets&amp;type=watch&amp;count=true" allowtransparency="true" frameborder="0" scrolling="0" width="90px" height="20px"></iframe>
+          </li>
+          <li>
+            <iframe class="github-btn" src="http://markdotto.github.com/github-buttons/github-btn.html?user=marcuswhybrow&amp;repo=minecraft-widgets&amp;type=fork&amp;count=true" allowtransparency="true" frameborder="0" scrolling="0" width="90px" height="20px"></iframe>
+          </li>
+        </ul>
+      </div>
+    </div>
+      
+    <div class="skins container">
+      <h1>Player Skins</h1>
+      
+      <p class="byline">Display any player you want, any size you wish. Behind the sences, body parts are cut out and arranged.</p>
+    
+      <div class="players">
+        
+        <div class="player" >
+          <iframe
+            src="http://marcuswhybrow.github.com/minecraft-widgets/skin.html?playername=Notch&amp;scale=10"
+            width="160"
+            height="320"
+            frameborder="0"
+            scrolling="0"
+            allowtransparency="true">
+          </iframe>
+        </div>
+      
+        <div class="player" >
+          <iframe
+            src="http://marcuswhybrow.github.com/minecraft-widgets/skin.html?playername=Honeydew&amp;scale=10"
+            width="160"
+            height="320"
+            frameborder="0"
+            scrolling="0"
+            allowtransparency="true">
+          </iframe>
+        </div>
+      
+        <div class="player" >
+          <iframe
+            src="http://marcuswhybrow.github.com/minecraft-widgets/skin.html?playername=craftysaurus&amp;scale=10"
+            width="160"
+            height="320"
+            frameborder="0"
+            scrolling="0"
+            allowtransparency="true">
+          </iframe>
+        </div>
+      
+        <div class="player" >
+          <iframe
+            src="http://marcuswhybrow.github.com/minecraft-widgets/skin.html?playername=Xephos&amp;scale=10"
+            width="160"
+            height="320"
+            frameborder="0"
+            scrolling="0"
+            allowtransparency="true">
+          </iframe>
+        </div>
+        
+        <div class="player" >
+          <iframe
+            src="http://marcuswhybrow.github.com/minecraft-widgets/skin.html?playername=jeb_&amp;scale=10"
+            width="160"
+            height="320"
+            frameborder="0"
+            scrolling="0"
+            allowtransparency="true">
+          </iframe>
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="span6">
+          <img class="feature-icon" src="assets/img/glyphicons/glyphicons_118_embed_close.png">
+          <h2>What you need to do</h2>
+          <p>As a developer, you add an iframe to you HTML page, with a certain src url. You specify the playername, scale and the size the iframe appropriately. Use this form to customise the iframe code for you, or <a href="https://github.com/marcuswhybrow/minecraft-widgets#usage">read the docs</a>.</p>
+          
+          <div class="widget-creator well">
+            <form>
+              <input name="playername" type="text" class="input-large" placeholder="Minecraft player name">
+              <input name="scale" type="text" class="input-large" placeholder="Output scale">
+
+              <div class="target">
+                <input type="text" class="input-xlarge" placeholder="Code appears here" readonly="readonly">
+              </div>
+            </form>
+          </div>
+          
+        </div>
+        
+        <div class="span6">
+          <img class="feature-icon" src="assets/img/glyphicons/glyphicons_009_magic.png">
+          <h2>What happens in that iframe</h2>
+          <p>JavaScript grabs a copy of the skin image file uploaded by the specified player. Then it cuts outs the body pieces and arranges them on an HTML canvas.</p>
+          
+          <img class="feature-icon" src="assets/img/glyphicons/glyphicons_082_roundabout.png">
+          <h2>A note about proxying</h2>
+          <p>Minecraft stores skin image files in an amazon s3 bucket. Amazon does not support a necessaary protocal called "CORS". A bespoke proxy alleviates this problem but makes this service dependent on its reliability.</p>
+          <p><a href="https://github.com/marcuswhybrow/cors-proxy">marcuswhybrow/cors-proxy</a> is the code deployed to a free heroku app acting as the CORS proxy, enabling the player skin widget to work. I will have to monitor how responsive this service is under load and make hosting decisions at that point.</p>
+        </div>
+      </div>
+
+    </div>
+    
+    <div class="container">
+      <footer class="footer">
+        <p>Icons from <a class="ga-track" href="http://glyphicons.com">Glyphicons Free</a>, licensed under <a class="ga-track" href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.</p>
+      </footer>
+    </div>
+
   </body>
 </html>
