@@ -11,6 +11,8 @@
   </head>
   <body></body>
   
+  <script type="text/javascript" src="assets/js/jquery-1.7.2.min.js"></script>
+  <script type="text/javascript" src="assets/js/jquery.cors.js"></script>
   <script type="text/javascript">
     var params = function () {
       var vars = [], hash;
@@ -23,9 +25,11 @@
       return vars;
     }();
     
-    var playerName = params.playername || "Notch",
-       scale = Math.floor(params.scale) || 1,
-       playerImage = "http://corsproxy.herokuapp.com/http://s3.amazonaws.com/MinecraftSkins/" + playerName + ".png";
+    var playerName = params.playername,
+        scale = Math.floor(params.scale) || 1,
+        // playerImage = "http://corsproxy.herokuapp.com/http://s3.amazonaws.com/MinecraftSkins/" + playerName + ".png",
+        playerImage = "http://172.17.10.10:5000/base64/http://s3.amazonaws.com/MinecraftSkins/" + playerName + ".png",
+        img = new Image();
     
     // Converts a co-ordinate to scale
     function sc(coord) {
@@ -38,8 +42,6 @@
     // Minecraft skin image size
     origCanvas.width = sc(64);
     origCanvas.height = sc(32);
-    
-    // document.body.appendChild(origCanvas);
     
     function BodyPart(x, y, w, h, onLoadHandler) {
       this.onLoadHandler = onLoadHandler;
@@ -67,106 +69,84 @@
         context.drawImage(this.image, x, y, this.width, this.height);
       }
     }
-  
-    function base64Encode(str) {
-      var CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-      var out = "", i = 0, len = str.length, c1, c2, c3;
-      while (i < len) {
-        c1 = str.charCodeAt(i++) & 0xff;
-        if (i == len) {
-          out += CHARS.charAt(c1 >> 2);
-          out += CHARS.charAt((c1 & 0x3) << 4);
-          out += "==";
-          break;
-        }
-        c2 = str.charCodeAt(i++);
-        if (i == len) {
-          out += CHARS.charAt(c1 >> 2);
-          out += CHARS.charAt(((c1 & 0x3)<< 4) | ((c2 & 0xF0) >> 4));
-          out += CHARS.charAt((c2 & 0xF) << 2);
-          out += "=";
-          break;
-        }
-        c3 = str.charCodeAt(i++);
-        out += CHARS.charAt(c1 >> 2);
-        out += CHARS.charAt(((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4));
-        out += CHARS.charAt(((c2 & 0xF) << 2) | ((c3 & 0xC0) >> 6));
-        out += CHARS.charAt(c3 & 0x3F);
+    
+    function onImageLoad(img) {
+      origCanvasContext.drawImage(img, 0, 0, 64, 32);
+      var origImage = origCanvasContext.getImageData(0, 0, 64, 32);
+      
+      origCanvasContext.clearRect(0, 0, origCanvas.width, origCanvas.height);
+      for (var h = 0; h < origImage.data.length; h += 4) {
+        var x = (h / 4) % origImage.width;
+        var y = Math.floor(h / 4 / origImage.width);
+                
+        var channels = [origImage.data[h], origImage.data[h+1], origImage.data[h+2], origImage.data[h+3]];
+        var rgbaCode = ["rgba(", channels.join(","), ")"].join("");
+                
+        origCanvasContext.fillStyle = rgbaCode;
+        origCanvasContext.fillRect(x * scale, y * scale, scale, scale);
       }
-      return out;
+      
+      var finalCanvas = document.createElement('canvas'),
+          finalCanvasContext = finalCanvas.getContext('2d');
+      
+      finalCanvas.width = sc(16);
+      finalCanvas.height = sc(32);
+      
+      var head = new BodyPart(sc(8), sc(8), sc(8), sc(8), function() {
+        this.draw(finalCanvasContext, sc(4), sc(0));
+      });
+      
+      var body = new BodyPart(sc(20), sc(20), sc(8), sc(12), function() {
+        this.draw(finalCanvasContext, sc(4), sc(8));
+      });
+      
+      var legRight = new BodyPart(sc(4), sc(20), sc(4), sc(12), function() {
+        this.draw(finalCanvasContext, sc(4), sc(20));
+        
+        finalCanvasContext.save();
+        finalCanvasContext.translate(finalCanvas.width, 0);
+        finalCanvasContext.scale(-1, 1);
+        this.draw(finalCanvasContext, sc(4), sc(20));
+        finalCanvasContext.restore();
+      });
+      
+      var armRight = new BodyPart(sc(44), sc(20), sc(4), sc(12), function() {
+        this.draw(finalCanvasContext, sc(0), sc(8));
+        
+        finalCanvasContext.save();
+        finalCanvasContext.translate(finalCanvas.width, 0);
+        finalCanvasContext.scale(-1, 1);
+        this.draw(finalCanvasContext, sc(0), sc(8));
+        finalCanvasContext.restore();
+      });
+      
+      document.body.appendChild(finalCanvas);
     }
     
-    var isIE = window.XDomainRequest;
-    if (isIE) {
-      xhr = window.XDomainRequest();
+    if (playerName) {
+      $(function() {
+        // $.support.cors = true;
+        $.ajax({
+          url: playerImage + '?breakcache=' + Math.random(),
+          success: function(data) {
+            img.src = 'data:image/png;base64,' + data;
+          },
+          error: function(jsxhr, status, error) {
+            img.src = 'assets/img/default.png';
+          },
+          complete: function() {
+            img.onload = function() {
+              onImageLoad(img);
+            }
+          }
+        });
+      });
     } else {
-      xhr = new XMLHttpRequest();
-      xhr.overrideMimeType('text/plain; charset=x-user-defined');
-    }
-    xhr.open('GET', playerImage, false);
-    xhr.onload = function() {
-      var img = new Image();
-      
-      if (xhr.status != 200) {
-        img.src = 'assets/img/default.png';
-      } else {
-        img.src = 'data:image/png;base64,' + base64Encode(xhr.response);
-      }
-      
+      img.src = 'assets/img/default.png';
       img.onload = function() {
-        origCanvasContext.drawImage(img, 0, 0, 64, 32);
-            
-        var origImage = origCanvasContext.getImageData(0, 0, 64, 32);
-        
-        origCanvasContext.clearRect(0, 0, origCanvas.width, origCanvas.height);
-        for (var h = 0; h < origImage.data.length; h += 4) {
-          var x = (h / 4) % origImage.width;
-          var y = Math.floor(h / 4 / origImage.width);
-                  
-          var channels = [origImage.data[h], origImage.data[h+1], origImage.data[h+2], origImage.data[h+3]];
-          var rgbaCode = ["rgba(", channels.join(","), ")"].join("");
-                  
-          origCanvasContext.fillStyle = rgbaCode;
-          origCanvasContext.fillRect(x * scale, y * scale, scale, scale);
-        }
-        
-        var finalCanvas = document.createElement('canvas'),
-            finalCanvasContext = finalCanvas.getContext('2d');
-        
-        document.body.appendChild(finalCanvas);
-        finalCanvas.width = sc(16);
-        finalCanvas.height = sc(32);
-        
-        var head = new BodyPart(sc(8), sc(8), sc(8), sc(8), function() {
-          this.draw(finalCanvasContext, sc(4), sc(0));
-        });
-        
-        var body = new BodyPart(sc(20), sc(20), sc(8), sc(12), function() {
-          this.draw(finalCanvasContext, sc(4), sc(8));
-        });
-        
-        var legRight = new BodyPart(sc(4), sc(20), sc(4), sc(12), function() {
-          this.draw(finalCanvasContext, sc(4), sc(20));
-          
-          finalCanvasContext.save();
-          finalCanvasContext.translate(finalCanvas.width, 0);
-          finalCanvasContext.scale(-1, 1);
-          this.draw(finalCanvasContext, sc(4), sc(20));
-          finalCanvasContext.restore();
-        });
-        
-        var armRight = new BodyPart(sc(44), sc(20), sc(4), sc(12), function() {
-          this.draw(finalCanvasContext, sc(0), sc(8));
-          
-          finalCanvasContext.save();
-          finalCanvasContext.translate(finalCanvas.width, 0);
-          finalCanvasContext.scale(-1, 1);
-          this.draw(finalCanvasContext, sc(0), sc(8));
-          finalCanvasContext.restore();
-        });
+        onImageLoad(img);
       }
-    };
-    xhr.send();
+    }
     
   </script>
 </html>
