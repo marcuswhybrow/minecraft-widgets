@@ -27,8 +27,7 @@
     
     var playerName = params.playername,
         scale = Math.floor(params.scale) || 1,
-        // playerImage = "http://corsproxy.herokuapp.com/http://s3.amazonaws.com/MinecraftSkins/" + playerName + ".png",
-        playerImage = "http://172.17.10.10:5000/base64/http://s3.amazonaws.com/MinecraftSkins/" + playerName + ".png",
+        playerImage = "http://corsproxy.herokuapp.com/base64/http://s3.amazonaws.com/MinecraftSkins/" + playerName + ".png",
         img = new Image();
     
     // Converts a co-ordinate to scale
