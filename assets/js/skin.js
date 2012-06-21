@@ -32,7 +32,7 @@ Player = function(minecraftName, scale, onLoadHandler) {
     this.isHelmetHidden = this.isHelmetAllSameColour();
 
     // Must be same number of BodyPart instances created for "this"
-    this.numBodyParts = 1;
+    this.numBodyParts = 8;
 
     var head = new Player.BodyPart(this, 8, 8, 8, 8),
         body = new Player.BodyPart(this, 20, 20, 8, 12),
