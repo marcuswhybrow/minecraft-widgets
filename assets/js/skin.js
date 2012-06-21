@@ -169,10 +169,6 @@ Player.BodyPart = function(player, x, y, width, height, options) {
   this.isTransparent = false;
   this.scale = this.player.scale;
   if (typeof options != 'undefined') {
-    if (typeof options.transformHandler != 'undefined')
-      options.transformHandler(context);
-
-    this.isTransparent = options.isTransparent || false;
     this.scale = options.scale * this.player.scale || this.player.scale;
   }
 
@@ -181,6 +177,14 @@ Player.BodyPart = function(player, x, y, width, height, options) {
 
   context.canvas.width = this.width;
   context.canvas.height = this.height;
+
+  if (typeof options != 'undefined') {
+    if (typeof options.transformHandler != 'undefined')
+      options.transformHandler(context);
+
+    this.isTransparent = options.isTransparent || false;
+    this.scale = options.scale * this.player.scale || this.player.scale;
+  }
 
   var i,
       canvasX = width,
