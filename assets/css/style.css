@@ -112,6 +112,7 @@ body {
   margin-top: 40px;
   margin-bottom: 30px;
   text-align: center;
+  overflow: hidden;
 }
 .skins .players .player {
   margin-right: 20px;
