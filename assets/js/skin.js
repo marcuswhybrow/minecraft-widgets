@@ -29,8 +29,10 @@ Player = function(minecraftName, scale, onLoadHandler) {
 
     this.context.drawImage(this.image, 0, 0, 64, 32);
 
+    this.isHelmetHidden = this.isHelmetAllSameColour();
+
     // Must be same number of BodyPart instances created for "this"
-    this.numBodyParts = 8;
+    this.numBodyParts = 1;
 
     var head = new Player.BodyPart(this, 8, 8, 8, 8),
         body = new Player.BodyPart(this, 20, 20, 8, 12),
@@ -45,16 +47,18 @@ Player = function(minecraftName, scale, onLoadHandler) {
         helmetBack = new Player.BodyPart(this, 56, 8, 8, 8, {
           isTransparent: true,
           scale: 1.125
-        });;
+        });
 
-    this.attatchBodyPart(helmetBack, 3.5, -0.5);
-    this.attatchBodyPart(head, 4, 0);
-    this.attatchBodyPart(body, 4, 8);
-    this.attatchBodyPart(legRight, 4, 20);
-    this.attatchBodyPart(legLeft, 8, 20);
-    this.attatchBodyPart(armRight, 0, 8);
-    this.attatchBodyPart(armLeft, 12, 8);
-    this.attatchBodyPart(helmet, 3.5, -0.5);
+    if (this.isHelmetHidden == false)
+      this.attachBodyPart(helmetBack, 3.5, -0.5);
+    this.attachBodyPart(head, 4, 0);
+    this.attachBodyPart(body, 4, 8);
+    this.attachBodyPart(legRight, 4, 20);
+    this.attachBodyPart(legLeft, 8, 20);
+    this.attachBodyPart(armRight, 0, 8);
+    this.attachBodyPart(armLeft, 12, 8);
+    if (this.isHelmetHidden == false)
+      this.attachBodyPart(helmet, 3.5, -0.5);
   });
 };
 Player.prototype = {
@@ -64,13 +68,46 @@ Player.prototype = {
     }
   },
 
+  isHelmetAllSameColour: function() {
+    var frontBackAndSides = this.context.getImageData(32, 8, 32, 8);
+        topAndBottom = this.context.getImageData(40, 0, 16, 8);
+
+    var i = frontBackAndSides.data.length-4,
+        colour = [
+          frontBackAndSides.data[0],
+          frontBackAndSides.data[1],
+          frontBackAndSides.data[2],
+          frontBackAndSides.data[3]
+        ];
+
+    function equal(a,b) { return !(a<b || b<a); }
+    function getColour(data, i) { return [ data[i], data[i+1], data[i+2], data[i+3] ]; }
+
+    while (i >= 0) {
+      if (equal(colour, getColour(frontBackAndSides.data, i)) == false)
+        return false;
+      i -= 4;
+    }
+
+    i = topAndBottom.data.length-4;
+
+    while (i >= 0) {
+      if (equal(colour, getColour(topAndBottom.data, i)) == false)
+        return false;
+      i -= 4;
+    }
+
+    return true;
+  },
+
+
   bodyPartLoaded: function() {
     if (++this.numBodyPartsLoaded >= this.numBodyParts) {
       this.onLoadHandler.call(this);
     }
   },
 
-  attatchBodyPart: function(bodyPart, largeScaleX, largeScaleY) {
+  attachBodyPart: function(bodyPart, largeScaleX, largeScaleY) {
     bodyPart.setOffset(largeScaleX, largeScaleY);
     this.bodyParts.push(bodyPart);
   },
