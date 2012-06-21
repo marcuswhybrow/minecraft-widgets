@@ -18,7 +18,7 @@ Player = function(minecraftName, scale, onLoadHandler) {
   this.numBodyPartsLoaded = 0;
   this.bodyParts = [];
   this.x = 0;
-  this.y = 0;
+  this.y = Math.ceil(0.5 * scale);
 
   this.context = document.createElement('canvas').getContext('2d');
 
@@ -30,21 +30,31 @@ Player = function(minecraftName, scale, onLoadHandler) {
     this.context.drawImage(this.image, 0, 0, 64, 32);
 
     // Must be same number of BodyPart instances created for "this"
-    this.numBodyParts = 6;
+    this.numBodyParts = 8;
 
     var head = new Player.BodyPart(this, 8, 8, 8, 8),
         body = new Player.BodyPart(this, 20, 20, 8, 12),
         legRight = new Player.BodyPart(this, 4, 20, 4, 12),
-        legLeft = new Player.BodyPart(this, 4, 20, 4, 12, Transforms.flipHorizontal),
+        legLeft = new Player.BodyPart(this, 4, 20, 4, 12, { transformHandler: Transforms.flipHorizontal }),
         armRight = new Player.BodyPart(this, 44, 20, 4, 12),
-        armLeft = new Player.BodyPart(this, 44, 20, 4, 12, Transforms.flipHorizontal);
+        armLeft = new Player.BodyPart(this, 44, 20, 4, 12, { transformHandler: Transforms.flipHorizontal }),
+        helmet = new Player.BodyPart(this, 40, 8, 8, 8, {
+          isTransparent: true,
+          scale: 1.125
+        }),
+        helmetBack = new Player.BodyPart(this, 56, 8, 8, 8, {
+          isTransparent: true,
+          scale: 1.125
+        });;
 
+    this.attatchBodyPart(helmetBack, 3.5, -0.5);
     this.attatchBodyPart(head, 4, 0);
     this.attatchBodyPart(body, 4, 8);
     this.attatchBodyPart(legRight, 4, 20);
     this.attatchBodyPart(legLeft, 8, 20);
     this.attatchBodyPart(armRight, 0, 8);
     this.attatchBodyPart(armLeft, 12, 8);
+    this.attatchBodyPart(helmet, 3.5, -0.5);
   });
 };
 Player.prototype = {
@@ -107,12 +117,10 @@ Player.prototype = {
 };
 
 
-Player.BodyPart = function(player, x, y, width, height, transformHandler) {
+Player.BodyPart = function(player, x, y, width, height, options) {
   this.player = player;
   this.x = x;
   this.y = y;
-  this.width = width * this.player.scale;
-  this.height = height * this.player.scale;
   this.offsetX = 0;
   this.offsetY = 0;
 
@@ -120,29 +128,44 @@ Player.BodyPart = function(player, x, y, width, height, transformHandler) {
   this.image = new Image();
 
   var context = document.createElement('canvas').getContext('2d');
-  
+
+  this.isTransparent = false;
+  this.scale = this.player.scale;
+  if (typeof options != 'undefined') {
+    if (typeof options.transformHandler != 'undefined')
+      options.transformHandler(context);
+
+    this.isTransparent = options.isTransparent || false;
+    this.scale = options.scale * this.player.scale || this.player.scale;
+  }
+
+  this.width = width * this.scale;
+  this.height = height * this.scale;
+
   context.canvas.width = this.width;
   context.canvas.height = this.height;
-
-  if (typeof transformHandler != 'undefined')
-    transformHandler(context);
 
   var i,
       canvasX = width,
       canvasY = height,
       dataWidth = this.data.width,
-      scale = this.player.scale;
+      scale = this.scale;
 
   while(--canvasX >= 0) {
     while(--canvasY >= 0) {
       i = canvasX * 4 + canvasY * 4 * dataWidth;
+
+      if (this.isTransparent == false) {
+        context.fillStyle = '#000'
+        context.fillRect(canvasX * scale, canvasY * scale, scale, scale);
+      }
 
       context.fillStyle = 'rgba('
         +this.data.data[i]+','
         +this.data.data[i+1]+','
         +this.data.data[i+2]+','
         +this.data.data[i+3]+')';
-      context.fillRect(canvasX * scale, canvasY * scale, scale, scale);
+      context.fillRect(Math.ceil(canvasX * scale), Math.ceil(canvasY * scale), Math.ceil(scale), Math.ceil(scale));
     }
     canvasY = height;
   }
